@@ -5,6 +5,7 @@ using System.Data;
 using System.Data.Sql;
 using System;
 using System.Collections.Generic;
+using Tuvalu.Tasks;
 
 namespace Tuvalu.DB
 {
@@ -230,15 +231,15 @@ namespace Tuvalu.DB
         {
             if (db.DBType == "SQLite")
             {
-            if (string.IsNullOrEmpty(db.DBPath))
-            {
-                throw new Exception("Database path cannot be empty");
-            }
-            SQLiteConnection.CreateFile(db.DBPath);
+                if (string.IsNullOrEmpty(db.DBPath))
+                {
+                    throw new Exception("Database path cannot be empty");
+                }
+                SQLiteConnection.CreateFile(db.DBPath);
             }
             else
             {
-            throw new Exception("Database type not supported");
+                throw new Exception("Database type not supported");
             }
         }
         public static bool DBExists(DBconnector db)
@@ -246,15 +247,196 @@ namespace Tuvalu.DB
             bool result = false;
             if (db.DBType == "SQLite")
             {
-            if (string.IsNullOrEmpty(db.DBPath))
-            {
-                throw new Exception("Database path cannot be empty");
-            }
-            result = System.IO.File.Exists(db.DBPath);
+                if (string.IsNullOrEmpty(db.DBPath))
+                {
+                    throw new Exception("Database path cannot be empty");
+                }
+                result = System.IO.File.Exists(db.DBPath);
             }
             else
             {
-            throw new Exception("Database type not supported");
+                throw new Exception("Database type not supported");
+            }
+            return result;
+        }
+        public static int ExecuteNonQuery(DBconnector db)
+        {
+            int result = 0;
+            if (db.DBType == "SQLite")
+            {
+                if (string.IsNullOrEmpty(db.DBConnectionString))
+                {
+                    throw new Exception("Database connection string cannot be empty");
+                }
+                using (SQLiteConnection connection = new SQLiteConnection(db.DBConnectionString))
+                {
+                    connection.Open();
+                    using (SQLiteCommand command = new SQLiteCommand(connection))
+                    {
+                        command.CommandText = db.DBCommand;
+                        result = command.ExecuteNonQuery();
+                    }
+                    connection.Close();
+                }
+            }
+            else
+            {
+                throw new Exception("Database type not supported");
+            }
+            return result;
+        }
+        public static int ExecuteScalar(DBconnector db)
+        {
+            int result = 0;
+            if (db.DBType == "SQLite")
+            {
+                if (string.IsNullOrEmpty(db.DBConnectionString))
+                {
+                    throw new Exception("Database connection string cannot be empty");
+                }
+                using (SQLiteConnection connection = new SQLiteConnection(db.DBConnectionString))
+                {
+                    connection.Open();
+                    using (SQLiteCommand command = new SQLiteCommand(connection))
+                    {
+                        command.CommandText = db.DBCommand;
+                        result = Convert.ToInt32(command.ExecuteScalar());
+                    }
+                    connection.Close();
+                }
+            }
+            else
+            {
+                throw new Exception("Database type not supported");
+            }
+            return result;
+        }
+        public static List<TTasks.TTask> GetTasks(DBconnector db)
+        {
+            List<TTasks.TTask> result = new List<TTasks.TTask>();
+            if (db.DBType == "SQLite")
+            {
+                if (string.IsNullOrEmpty(db.DBConnectionString))
+                {
+                    throw new Exception("Database connection string cannot be empty");
+                }
+                using (SQLiteConnection connection = new SQLiteConnection(db.DBConnectionString))
+                {
+                    connection.Open();
+                    using (SQLiteCommand command = new SQLiteCommand(connection))
+                    {
+                        command.CommandText = db.DBCommand;
+                        using (SQLiteDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                TTasks.TTask task = new TTasks.TTask
+                                {
+                                    Name = reader["Name"].ToString(),
+                                    Description = reader["Description"].ToString(),
+                                    Status = reader["Status"].ToString(),
+                                    Priority = reader["Priority"].ToString(),
+                                    DueDate = reader["DueDate"].ToString(),
+                                    CreatedDate = reader["CreatedDate"].ToString(),
+                                    CompletedDate = reader["CompletedDate"].ToString(),
+                                    ID = reader["ID"].ToString()
+                                };
+                                result.Add(task);
+                            }
+                        }
+                    }
+                    connection.Close();
+                }
+            }
+            else
+            {
+                throw new Exception("Database type not supported");
+            }
+            return result;
+        }
+        public static DataTable GetDataTable(DBconnector db)
+        {
+            DataTable result = new DataTable();
+            if (db.DBType == "SQLite")
+            {
+                if (string.IsNullOrEmpty(db.DBConnectionString))
+                {
+                    throw new Exception("Database connection string cannot be empty");
+                }
+                using (SQLiteConnection connection = new SQLiteConnection(db.DBConnectionString))
+                {
+                    connection.Open();
+                    using (SQLiteCommand command = new SQLiteCommand(connection))
+                    {
+                        command.CommandText = db.DBCommand;
+                        using (SQLiteDataReader reader = command.ExecuteReader())
+                        {
+                            result.Load(reader);
+                        }
+                    }
+                    connection.Close();
+                }
+            }
+            else
+            {
+                throw new Exception("Database type not supported");
+            }
+            return result;
+        }
+
+        public static void InsertData(DBconnector db)
+        {
+            if (db.DBType == "SQLite")
+            {
+                if (string.IsNullOrEmpty(db.DBConnectionString))
+                {
+                    throw new Exception("Database connection string cannot be empty");
+                }
+                using (SQLiteConnection connection = new SQLiteConnection(db.DBConnectionString))
+                {
+                    connection.Open();
+                    using (SQLiteCommand command = new SQLiteCommand(connection))
+                    {
+                        command.CommandText = db.DBCommand;
+                        command.ExecuteNonQuery();
+                    }
+                    connection.Close();
+                }
+            }
+            else
+            {
+                throw new Exception("Database type not supported");
+            }
+        }
+        public static int GetNextID(DBconnector db)
+        {
+            int result = 0;
+            if (db.DBType == "SQLite")
+            {
+                if (string.IsNullOrEmpty(db.DBConnectionString))
+                {
+                    throw new Exception("Database connection string cannot be empty");
+                }
+                using (SQLiteConnection connection = new SQLiteConnection(db.DBConnectionString))
+                {
+                    connection.Open();
+                    using (SQLiteCommand command = new SQLiteCommand(connection))
+                    {
+                        command.CommandText = "SELECT MAX(ID) FROM " + db.DBTable;
+                        using (SQLiteDataReader reader = command.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                result = reader.GetInt32(0) + 1;
+                            }
+                        }
+                    }
+                    connection.Close();
+                }
+            }
+            else
+            {
+                throw new Exception("Database type not supported");
             }
             return result;
         }
@@ -263,24 +445,24 @@ namespace Tuvalu.DB
             int result = 0;
             if (db.DBType == "SQLite")
             {
-            if (string.IsNullOrEmpty(db.DBConnectionString))
-            {
-                throw new Exception("Database connection string cannot be empty");
-            }
-            using (SQLiteConnection connection = new SQLiteConnection(db.DBConnectionString))
-            {
-                connection.Open();
-                using (SQLiteCommand command = new SQLiteCommand(connection))
+                if (string.IsNullOrEmpty(db.DBConnectionString))
                 {
-                command.CommandText = db.DBCommand;
-                result = command.ExecuteNonQuery();
+                    throw new Exception("Database connection string cannot be empty");
                 }
-                connection.Close();
-            }
+                using (SQLiteConnection connection = new SQLiteConnection(db.DBConnectionString))
+                {
+                    connection.Open();
+                    using (SQLiteCommand command = new SQLiteCommand(connection))
+                    {
+                        command.CommandText = db.DBCommand;
+                        result = command.ExecuteNonQuery();
+                    }
+                    connection.Close();
+                }
             }
             else
             {
-            throw new Exception("Database type not supported");
+                throw new Exception("Database type not supported");
             }
             return result;
         }

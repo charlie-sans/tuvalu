@@ -1,17 +1,12 @@
 ﻿using System;
-using Tuvalu.Tasks;
+using System.Collections.Generic;
+using System.IO;
+using Newtonsoft.Json;
 using Tuvalu.DB;
 using Tuvalu.logger;
-using Terminal.Gui;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using Newtonsoft.Json;
-using System.Linq;
-using System.Text;
-using System.Data.SQLite;
-using System.Data.SqlClient;
-using Tuvalu.tui;
-namespace Tuvalu
+using Tuvalu.Tasks;
+
+namespace Tuvaluw
 {
     public class Program
     {
@@ -19,29 +14,29 @@ namespace Tuvalu
         {
             public DBconnector DB;
             public List<TTasks.TTask> Tasklist;
+            public Dictionary<string, object>? json_config;
 
             public Data(DBconnector db, List<TTasks.TTask> tasklist)
             {
                 DB = db;
                 Tasklist = tasklist;
+                json_config = null;
             }
-            //config
-            public string json_config;
-            
         }
+        static DBconnector DB = new DBconnector
+        {
+            DBPath = "Tasks.sqlite",
+            Provider = "SQLite",
+            DBConnectionString = "Data Source=Tasks.sqlite",
+            DBName = "Tasks",
+            DBType = "SQLite"
+        };
         public static void Main(string[] args)
         {
             try
             {
-                
-                var DB = new DBconnector
-                {
-                    DBPath = "Tasks.sqlite",
-                    Provider = "SQLite",
-                    DBConnectionString = "Data Source=Tasks.sqlite",
-                    DBName = "Tasks",
-                    DBType = "SQLite"
-                };
+
+
                 if (!DBconnector.DBExists(DB))
                 {
                     Console.WriteLine("Database does not exist");
@@ -53,30 +48,29 @@ namespace Tuvalu
                 }
                 else
                 {
-                    Console.WriteLine("Database exists, lets goo");
-                    using (StreamReader sr = new StreamReader("config.json"))
+                    Console.WriteLine("Database exists");
+                    if (File.Exists("config.json"))
                     {
-                        if (sr != null)
+                        using (StreamReader sr = new StreamReader("config.json"))
                         {
-                            string json = sr.ReadToEnd();
-                            string json_data = JsonConvert.DeserializeObject<string>(json) ?? string.Empty;
-                            Data data = new();
-                            data.json_config = json_data;
-                            configure(data);
+                            if (sr != null)
+                            {
+                                string json = sr.ReadToEnd();
+                                Dictionary<string, object>? json_data = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
+                                Data data = new Data();
+                                data.json_config = json_data;
+                                Logger.Log("Config file exists");
+                                configure(data);
+                            }
                         }
                     }
+                    else
+                    {
+                        Console.WriteLine("Config file does not exist");
+                        Logger.Log("Config file does not exist");
+                        configure(new Data());
+                    }
                 }
-
-            }
-            catch (SqlException sqlEx)
-            {
-                Console.WriteLine($"Database error: {sqlEx.Message}");
-                Logger.Log(sqlEx);
-            }
-            catch (IOException ioEx)
-            {
-                Console.WriteLine($"File I/O error: {ioEx.Message}");
-                Logger.Log(ioEx);
             }
             catch (Exception ex)
             {
@@ -84,12 +78,105 @@ namespace Tuvalu
                 Logger.Log(ex);
             }
         }
+        public static void print(string data)
+        {
+            Console.WriteLine(data);
+        }
         public static void configure(Data data)
         {
-            string json = data.json_config;
-            var jsonObject = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
-            bool? is_setup = jsonObject != null && jsonObject.ContainsKey("is_setup") ? jsonObject["is_setup"] as bool? : null;
+            var setup = (bool)data.json_config["is_setup"];
+            if (setup == true)
+            {
+                print("already setup.\n");
+                Logger.Log("Already setup");
+                start(data);
+                return;
+            }
+        }
+        public static void start(Data data)
+        {
+            print("Starting Tuvalu\n");
+            Logger.Log("Starting Tuvalu");
+            bool running = true;
+            while (running)
+            {
+                print("Enter a command: ");
+                string command = Console.ReadLine();
+                if (command == "exit")
+                {
+                    running = false;
+                    Logger.Log("Exiting Tuvalu");
+                    print("Exiting Tuvalu\n");
+                }
+                else
+                {
+                    switch (command)
+                    {
+                        case "add":
+                            print("Adding task\n");
+                            Logger.Log("Adding task");
+                            addTask(data);
+                            break;
+                        case "list":
+                            print("Listing tasks\n");
+                            Logger.Log("Listing tasks");
+                            listTasks(data);
+                            break;
+                        // case "complete":
+                        //     print("Completing task\n");
+                        //     Logger.Log("Completing task");
+                        //     completeTask(data);
+                        //     break;
+                        // case "delete":
+                        //     print("Deleting task\n");
+                        //     Logger.Log("Deleting task");
+                        //     deleteTask(data);
+                        //     break;
+                        case "help":
+                            print("Commands: add, list, complete, delete, exit\n");
+                            Logger.Log("Help");
+                            break;
+                        default:
+                            print("Invalid command\n");
+                            Logger.Log("Invalid command");
+                            break;
+                    }
+                }
+            }
 
+        }
+        public static void addTask(Data data)
+        {
+            print("Enter task name: ");
+            string name = Console.ReadLine();
+            print("Enter task description: ");
+            string description = Console.ReadLine();
+            print("Enter task status: ");
+            string status = Console.ReadLine();
+            print("Enter task priority: ");
+            string priority = Console.ReadLine();
+            print("Enter task due date: ");
+            string dueDate = Console.ReadLine();
+            print("Enter task created date: ");
+            string createdDate = Console.ReadLine();
+            print("Enter task completed date: ");
+            string completedDate = Console.ReadLine();
+            int ID = DBconnector.GetNextID(DB);
+            TTasks.TTask task = new TTasks.TTask(name, description, status, priority, dueDate, createdDate, completedDate, ID.ToString());
+            data.Tasklist.Add(task);
+            DB.DBCommand = $"INSERT INTO Tasks (Name, Description, Status, Priority, DueDate, CreatedDate, CompletedDate, ID) VALUES ('{name}', '{description}', '{status}', '{priority}', '{dueDate}', '{createdDate}', '{completedDate}', '{ID}')";
+            DBconnector.InsertData(DB);
+            Logger.Log("Task added");
+        }
+        public static void listTasks(Data data)
+        {
+            DB.DBCommand = "SELECT * FROM Tasks";
+            DBconnector.GetTasks(DB);
+            foreach (TTasks.TTask task in data.Tasklist)
+            {
+                print($"Name: {task.Name}\nDescription: {task.Description}\nStatus: {task.Status}\nPriority: {task.Priority}\nDue Date: {task.DueDate}\nCreated Date: {task.CreatedDate}\nCompleted Date: {task.CompletedDate}\nID: {task.ID}\n");
+            }
+            Logger.Log("Tasks listed");
         }
     }
 }
