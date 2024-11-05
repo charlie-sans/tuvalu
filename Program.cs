@@ -134,7 +134,7 @@ namespace Tuvalu
                 jsonObject["is_setup"] = true;
                 jsonObject["user"] = user;
                 jsonObject["pronouns"] = pronouns;
-                jsonObject["theme"] = theme;
+                jsonObject["theme"] = theme; // bro, just stfu please respectfully
                 // if we can't serialize the object, we'll just throw an exception, gracefully halt the program, and log the error
                 try
                 {
