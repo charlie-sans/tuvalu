@@ -1526,24 +1526,33 @@
     ]
   },
   "packageFolders": {
-    "/home/charlie/.nuget/packages/": {}
+    "C:\\Users\\GAMER\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/charlie/Documents/git/tuvalu/tuvalu.csproj",
+      "projectUniqueName": "T:\\git\\tuvalu\\tuvalu.csproj",
       "projectName": "tuvalu",
-      "projectPath": "/home/charlie/Documents/git/tuvalu/tuvalu.csproj",
-      "packagesPath": "/home/charlie/.nuget/packages/",
-      "outputPath": "/home/charlie/Documents/git/tuvalu/obj/",
+      "projectPath": "T:\\git\\tuvalu\\tuvalu.csproj",
+      "packagesPath": "C:\\Users\\GAMER\\.nuget\\packages\\",
+      "outputPath": "T:\\git\\tuvalu\\obj\\",
       "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+      ],
       "configFilePaths": [
-        "/home/charlie/.nuget/NuGet/NuGet.Config"
+        "C:\\Users\\GAMER\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
       ],
       "sources": {
+        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "C:\\Program Files\\dotnet\\library-packs": {},
+        "C:\\Users\\GAMER\\AppData\\Roaming\\Cosmos User Kit\\packages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -1556,6 +1565,11 @@
         "warnAsError": [
           "NU1605"
         ]
+      },
+      "restoreAuditProperties": {
+        "enableAudit": "true",
+        "auditLevel": "low",
+        "auditMode": "direct"
       }
     },
     "frameworks": {
@@ -1595,7 +1609,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/lib64/dotnet/sdk/8.0.110/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.300/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
