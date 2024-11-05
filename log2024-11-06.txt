@@ -1,0 +1,31 @@
+=== Restart 1 ===
+2024-11-06 00:17:37 - INFO: setting the name for the task: pat the catgirl
+2024-11-06 00:17:37 - INFO: setting the description for task: pat the catgirl
+2024-11-06 00:17:37 - INFO: setting the status for task: in progress
+2024-11-06 00:17:37 - INFO: setting the priority for task: high
+2024-11-06 00:17:37 - INFO: setting the dueDate for task: 2/04/2022 12:00:00 AM
+2024-11-06 00:17:38 - INFO: setting the name for the task: pat the catgirl
+2024-11-06 00:17:38 - INFO: setting the description for task: pat the catgirl
+2024-11-06 00:17:38 - INFO: setting the status for task: in progress
+2024-11-06 00:17:38 - INFO: setting the priority for task: high
+2024-11-06 00:17:38 - INFO: setting the dueDate for task: 2/04/2022 12:00:00 AM
+2024-11-06 00:17:46 - INFO: setting the name for the task: pat the catgirl
+2024-11-06 00:17:46 - INFO: setting the description for task: pat the catgirl
+2024-11-06 00:17:46 - INFO: setting the status for task: in progress
+2024-11-06 00:17:46 - INFO: setting the priority for task: high
+2024-11-06 00:17:46 - INFO: setting the dueDate for task: 2/04/2022 12:00:00 AM
+2024-11-06 00:17:47 - INFO: setting the name for the task: pat the catgirl
+2024-11-06 00:17:47 - INFO: setting the description for task: pat the catgirl
+2024-11-06 00:17:47 - INFO: setting the status for task: in progress
+2024-11-06 00:17:47 - INFO: setting the priority for task: high
+2024-11-06 00:17:47 - INFO: setting the dueDate for task: 2/04/2022 12:00:00 AM
+2024-11-06 00:18:19 - INFO: setting the name for the task: pat the catgirl
+2024-11-06 00:18:19 - INFO: setting the description for task: pat the catgirl please
+2024-11-06 00:18:19 - INFO: setting the status for task: in progress
+2024-11-06 00:18:19 - INFO: setting the priority for task: FUCKING HIUGH
+2024-11-06 00:18:19 - INFO: setting the dueDate for task: 2/04/2022 12:00:00 AM
+2024-11-06 00:18:31 - INFO: setting the name for the task: pat the catgirl
+2024-11-06 00:18:31 - INFO: setting the description for task: pat the catgirl please
+2024-11-06 00:18:31 - INFO: setting the status for task: in progress
+2024-11-06 00:18:31 - INFO: setting the priority for task: FUCKING HIUGH
+2024-11-06 00:18:31 - INFO: setting the dueDate for task: 2024-2-3

@@ -1,0 +1,8 @@
+=== Restart 1 ===
+2024-11-05 23:57:06 - INFO: setting the name for the task: pat the catgirl
+2024-11-05 23:57:06 - INFO: setting the description for task: pat the catgirl
+2024-11-05 23:57:06 - INFO: setting the status for task: in progress
+2024-11-05 23:57:06 - INFO: setting the priority for task: high
+2024-11-05 23:57:06 - INFO: setting the dueDate for task: tomorrow
+2024-11-05 23:57:06 - ERROR: SQL logic error
+no such column: high

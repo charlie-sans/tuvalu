@@ -59,6 +59,19 @@ namespace Tuvalu.tui
             };
             return win;
         }
+        // Set the background color of the window
+        public static void SetWindowBackgroundColor(Window window, Terminal.Gui.Attribute Normal, Terminal.Gui.Attribute Focus, Terminal.Gui.Attribute HotNormal, Terminal.Gui.Attribute HotFocus)
+        {
+            window.ColorScheme = new ColorScheme
+            {
+                Normal = Normal,
+                Focus = Focus,
+                HotNormal = HotNormal,
+                HotFocus = HotFocus
+            };
+        }
+        
+        
         // create a new label
         public static Label CreateLabel(string text, int x, int y, int width, int height)
         {
@@ -114,7 +127,8 @@ namespace Tuvalu.tui
             var random = new Random();
             var top = Application.Top;
 
-            var win = CreateWindow(Task_helper_lines.greetings(random.Next(0, 3)), 0, 1, top.Frame.Width, top.Frame.Height - 1);
+            var win = CreateWindow(Task_helper_lines.greetings(random.Next(0, 3)), 0, 1, top.Frame.Width, top.Frame.Height - 1); // create the window
+            SetWindowBackgroundColor(win, Terminal.Gui.Attribute.Make(Color.Black, Color.BrightMagenta), Terminal.Gui.Attribute.Make(Color.Magenta, Color.Cyan), Terminal.Gui.Attribute.Make(Color.BrightMagenta, Color.Black), Terminal.Gui.Attribute.Make(Color.Magenta, Color.Cyan));
             top.Add(win);
 
             var menuItems = new Dictionary<string, Action>
@@ -253,16 +267,59 @@ namespace Tuvalu.tui
 
             if (selectedTask != null)
             {
+                Logger.Log("setting the name for the task: " + nameField.Text.ToString());
                 selectedTask.Name = nameField.Text.ToString(); // god i love getting null reference assignement errors. IT"S NOT FUCKING NULL YOU CUNT!
+                Logger.Log("setting the description for task: " + descriptionField.Text.ToString());
                 selectedTask.Description = descriptionField.Text.ToString();
+                Logger.Log("setting the status for task: "  + statusField.Text.ToString());
                 selectedTask.Status = statusField.Text.ToString();
+                Logger.Log("setting the priority for task: " + priorityField.Text.ToString());
                 selectedTask.Priority = priorityField.Text.ToString();
-                selectedTask.DueDate = DateTime.Parse(dueDateField.Text.ToString()).ToString();
+                Logger.Log("setting the dueDate for task: " + dueDateField.Text.ToString());
+                selectedTask.DueDate = dueDateField.Text.ToString();// love this 
 
-                DB.DBCommand = $"UPDATE Tasks SET Name = '{selectedTask.Name}', Description = '{selectedTask.Description}', Status = '{selectedTask.Status}', Priority = {selectedTask.Priority}, DueDate = '{selectedTask.DueDate}' WHERE ID = {selectedTask.ID}";
+                DB.DBCommand = $"UPDATE Tasks SET Name = '{selectedTask.Name}', Description = '{selectedTask.Description}', Status = '{selectedTask.Status}', Priority = '{selectedTask.Priority}', DueDate = '{selectedTask.DueDate}' WHERE ID = '{selectedTask.ID}'";
                 DBconnector.ExecuteNonQuery(DB);
 
                 taskNames[listView.SelectedItem] = selectedTask.Name;
+                listView.SetNeedsDisplay();
+            }
+        };
+        addButton.Clicked += () =>
+        {
+            // add the information inside the task list thingy to the db
+            var newTask = new TTasks.TTask
+            {
+                Name = nameField.Text.ToString(),
+                Description = descriptionField.Text.ToString(),
+                Status = statusField.Text.ToString(),
+                Priority = priorityField.Text.ToString(),
+                DueDate = DateTime.Parse(dueDateField.Text.ToString()).ToString(),
+                CreatedDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                CompletedDate = string.Empty,
+                ID = Guid.NewGuid().ToString()
+            };
+
+            if (tasks.Any(task => task.Name == newTask.Name))
+            {
+                MessageBox.ErrorQuery("Task already exists", "Task already exists, maybe you want to update it?", "Ok");
+            }
+            else
+            {
+                try 
+                {
+
+                DB.DBCommand = $"INSERT INTO Tasks (Name, Description, Status, Priority, DueDate, CreatedDate, CompletedDate, ID) VALUES ('{newTask.Name}', '{newTask.Description}', '{newTask.Status}', '{newTask.Priority}', '{newTask.DueDate}', '{newTask.CreatedDate}', '{newTask.CompletedDate}', '{newTask.ID}')";
+                DBconnector.ExecuteNonQuery(DB);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log(ex);
+                    MessageBox.ErrorQuery("Error", $"An error occurred while trying to add the task: {ex}", "Ok");
+                }
+
+                taskNames.Add(newTask.Name);
+                tasks.Add(newTask);
                 listView.SetNeedsDisplay();
             }
         };

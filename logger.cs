@@ -9,13 +9,33 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 
-
-
 namespace Tuvalu.logger
 {
     public class Logger
     {
         static string time = DateTime.Now.ToString("yyyy-MM-dd");
+        static string logPath = $"log{Logger.time}.txt";
+        static int restartCount = 0;
+
+        static Logger()
+        {
+            if (File.Exists(logPath))
+            {
+                restartCount = File.ReadAllLines(logPath).Count(line => line.Contains("=== Restart"));
+                AppendRestartSeparator();
+            }
+            else
+            {
+                AppendRestartSeparator();
+            }
+        }
+
+        private static void AppendRestartSeparator()
+        {
+            string separator = $"=== Restart {restartCount + 1} ===\n";
+            File.AppendAllText(logPath, separator);
+        }
+
         public struct LogEntry
         {
             public string Message;
@@ -24,9 +44,7 @@ namespace Tuvalu.logger
         }
 
         public static void Log(LogEntry entry)
-        {   
-            
-            string logPath = $"log{Logger.time}.txt";
+        {
             string logEntry = $"{entry.Timestamp} - {entry.Level}: {entry.Message}\n";
             File.AppendAllText(logPath, logEntry);
         }
@@ -69,7 +87,7 @@ namespace Tuvalu.logger
             Log(entry);
         }
 
-        public static void Log(string message, string level, string logPath)
+        public static void Log(string message, string level, string customLogPath)
         {
             LogEntry entry = new LogEntry
             {
@@ -77,10 +95,8 @@ namespace Tuvalu.logger
                 Level = level,
                 Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
             };
-            string logEntry = $"{entry.Timestamp} - {entry.Level}: {entry.Message}";
-            File.AppendAllText(logPath, logEntry);
+            string logEntry = $"{entry.Timestamp} - {entry.Level}: {entry.Message}\n";
+            File.AppendAllText(customLogPath, logEntry);
         }
-
-
     }
 }

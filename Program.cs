@@ -44,7 +44,7 @@ namespace Tuvalu
                     DBconnector.CreateDB(DB);
                     Console.WriteLine("Database created");
 
-                    DB.DBCommand = "CREATE TABLE IF NOT EXISTS Tasks (Name TEXT, Description TEXT, Status TEXT, Priority TEXT, DueDate TEXT, CreatedDate TEXT, CompletedDate TEXT, ID TEXT)";
+                    DB.DBCommand = "CREATE TABLE IF NOT EXISTS Tasks (Name TEXT, Description TEXT, Status TEXT, Priority TEXT, DueDate TEXT, CreatedDate TEXT, CompletedDate TEXT, ID TEXT PRIMARY KEY)";
                     DBconnector.CreateTable(DB);
                 }
                 else

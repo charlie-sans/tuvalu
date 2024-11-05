@@ -368,7 +368,6 @@ namespace Tuvalu.DB
         }
         public static int GetNextID(DBconnector db)
         {
-            int result = 0;
             if (db.DBType == "SQLite")
             {
                 if (string.IsNullOrEmpty(db.DBConnectionString))
@@ -380,12 +379,12 @@ namespace Tuvalu.DB
                     connection.Open();
                     using (SQLiteCommand command = new SQLiteCommand(connection))
                     {
-                        command.CommandText = "SELECT MAX(ID) FROM " + db.DBTable;
+                        command.CommandText = "SELECT COUNT(*) FROM Tasks";
                         using (SQLiteDataReader reader = command.ExecuteReader())
                         {
                             if (reader.Read())
                             {
-                                result = reader.GetInt32(0) + 1;
+                                return reader.GetInt32(0); // This will return 0 for the first task, 1 for the second, etc.
                             }
                         }
                     }
@@ -396,7 +395,7 @@ namespace Tuvalu.DB
             {
                 throw new Exception("Database type not supported");
             }
-            return result;
+            return 0; // Default to 0 if no tasks exist
         }
         // execute non query 
         

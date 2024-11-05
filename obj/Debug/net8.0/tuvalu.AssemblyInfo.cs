@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("tuvalu")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c9f950fa46f3712f379f53f2ece930f6768c12b9")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2dc3c2464b97c783389a6a6e34df33305d8cb5e7")]
 [assembly: System.Reflection.AssemblyProductAttribute("tuvalu")]
 [assembly: System.Reflection.AssemblyTitleAttribute("tuvalu")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
