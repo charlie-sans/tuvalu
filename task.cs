@@ -68,19 +68,22 @@ namespace Tuvalu{
             DBconnector dBconnector = new DBconnector();
             String con;
 
-            public TTasks()
-            {
-                con = dBconnector.DBConnectionString;
-            }
+            // public TTasks()
+            // {
+            //     con = dBconnector.DBConnectionString;
+            // }
             public struct TTask{
-                public string Name;
-                public string Description;
-                public string Status;
-                public string Priority;
-                public string DueDate;
-                public string CreatedDate;
-                public string CompletedDate;
-                public string ID;
+                public string Name { get; set; }
+
+                public string Description { get; set; }
+
+                public string Status { get; set; }
+
+                public string Priority { get; set; }
+                public string DueDate { get; set; }
+                public string CreatedDate { get; set; }
+                public string CompletedDate { get; set; }
+                public string ID { get; set; }
 
                 public static bool operator ==(TTask left, TTask right)
             {

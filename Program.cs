@@ -2,15 +2,11 @@
 using Tuvalu;
 using Tuvalu.DB;
 using Tuvalu.logger;
-using Terminal.Gui;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using Newtonsoft.Json;
-using System.Linq;
-using System.Text;
-using System.Data.SQLite;
-using System.Data.SqlClient;
 using Tuvalu.tui;
+using System.Collections.Generic;
+using System.IO;
+using Newtonsoft.Json;
+
 namespace Tuvalu
 {
     public class Program
@@ -19,29 +15,29 @@ namespace Tuvalu
         {
             public DBconnector DB;
             public List<TTasks.TTask> Tasklist;
+            public string json_config;
 
             public Data(DBconnector db, List<TTasks.TTask> tasklist)
             {
                 DB = db;
                 Tasklist = tasklist;
+                json_config = null;
             }
-            //config
-            public string json_config;
-            
         }
+        static DBconnector DB = new DBconnector
+        {
+            DBPath = "Tasks.sqlite",
+            Provider = "SQLite",
+            DBConnectionString = "Data Source=Tasks.sqlite",
+            DBName = "Tasks",
+            DBType = "SQLite"
+        };
         public static void Main(string[] args)
         {
             try
             {
-                
-                var DB = new DBconnector
-                {
-                    DBPath = "Tasks.sqlite",
-                    Provider = "SQLite",
-                    DBConnectionString = "Data Source=Tasks.sqlite",
-                    DBName = "Tasks",
-                    DBType = "SQLite"
-                };
+
+
                 if (!DBconnector.DBExists(DB))
                 {
                     Console.WriteLine("Database does not exist");
@@ -74,42 +70,27 @@ namespace Tuvalu
                         Console.WriteLine("Creating config file");
                         string json = "{\"is_setup\": false}";
                         File.WriteAllText("config.json", json);
-                    
+
                         using (System.IO.StreamWriter file = new System.IO.StreamWriter("config.json"))
                         {
                             file.WriteLine(json);
                         }
                         Console.WriteLine("Config file created");
                         Logger.Log("Config file created, going to configure the application");
-                        using (System.IO.StreamReader sr = new System.IO.StreamReader("config.json"))
-                        {
-                            if (sr != null)
-                            {
-                                string jsond = sr.ReadToEnd();
-                                Data data = new Data(DB, new List<TTasks.TTask>());
-                                data.json_config = json;
-                                configure(data);
-                            }
-                        }
+                       
                     }
+                  
                 }
-
-            }
-            catch (SqlException sqlEx)
-            {
-                Console.WriteLine($"Database error: {sqlEx.Message}");
-                Logger.Log(sqlEx);
-            }
-            catch (IOException ioEx)
-            {
-                Console.WriteLine($"File I/O error: {ioEx.Message}");
-                Logger.Log(ioEx);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"An unexpected error occurred: {ex.Message}");
                 Logger.Log(ex);
             }
+        }
+        public static void print(string data)
+        {
+            Console.WriteLine(data);
         }
         public static void configure(Data data)
         {
@@ -155,7 +136,7 @@ namespace Tuvalu
                 jsonObject["pronouns"] = pronouns;
                 jsonObject["theme"] = theme;
                 // if we can't serialize the object, we'll just throw an exception, gracefully halt the program, and log the error
-                try 
+                try
                 {
                     string new_json = JsonConvert.SerializeObject(jsonObject);
                     File.WriteAllText("config.json", new_json);
@@ -173,8 +154,41 @@ namespace Tuvalu
                     return;
                 }
 
-                
+
             }
+        }
+        public static void addTask(Data data)
+        {
+            print("Enter task name: ");
+            string name = Console.ReadLine();
+            print("Enter task description: ");
+            string description = Console.ReadLine();
+            print("Enter task status: ");
+            string status = Console.ReadLine();
+            print("Enter task priority: ");
+            string priority = Console.ReadLine();
+            print("Enter task due date: ");
+            string dueDate = Console.ReadLine();
+            print("Enter task created date: ");
+            string createdDate = Console.ReadLine();
+            print("Enter task completed date: ");
+            string completedDate = Console.ReadLine();
+            int ID = DBconnector.GetNextID(DB);
+            TTasks.TTask task = new TTasks.TTask(name, description, status, priority, dueDate, createdDate, completedDate, ID.ToString());
+            data.Tasklist.Add(task);
+            DB.DBCommand = $"INSERT INTO Tasks (Name, Description, Status, Priority, DueDate, CreatedDate, CompletedDate, ID) VALUES ('{name}', '{description}', '{status}', '{priority}', '{dueDate}', '{createdDate}', '{completedDate}', '{ID}')";
+            DBconnector.InsertData(DB);
+            Logger.Log("Task added");
+        }
+        public static void listTasks(Data data)
+        {
+            DB.DBCommand = "SELECT * FROM Tasks";
+            DBconnector.GetTasks(DB);
+            foreach (TTasks.TTask task in data.Tasklist)
+            {
+                print($"Name: {task.Name}\nDescription: {task.Description}\nStatus: {task.Status}\nPriority: {task.Priority}\nDue Date: {task.DueDate}\nCreated Date: {task.CreatedDate}\nCompleted Date: {task.CompletedDate}\nID: {task.ID}\n");
+            }
+            Logger.Log("Tasks listed");
         }
     }
 }

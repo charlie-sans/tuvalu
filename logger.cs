@@ -15,6 +15,7 @@ namespace Tuvalu.logger
 {
     public class Logger
     {
+        static string time = DateTime.Now.ToString("yyyy-MM-dd");
         public struct LogEntry
         {
             public string Message;
@@ -23,9 +24,10 @@ namespace Tuvalu.logger
         }
 
         public static void Log(LogEntry entry)
-        {
-            string logPath = "log.txt";
-            string logEntry = $"{entry.Timestamp} - {entry.Level}: {entry.Message}";
+        {   
+            
+            string logPath = $"log{Logger.time}.txt";
+            string logEntry = $"{entry.Timestamp} - {entry.Level}: {entry.Message}\n";
             File.AppendAllText(logPath, logEntry);
         }
 
