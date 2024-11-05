@@ -1,5 +1,5 @@
 ﻿using System;
-using Tuvalu.Tasks;
+using Tuvalu;
 using Tuvalu.DB;
 using Tuvalu.logger;
 using Terminal.Gui;
@@ -54,15 +54,42 @@ namespace Tuvalu
                 else
                 {
                     Console.WriteLine("Database exists, lets goo");
-                    using (StreamReader sr = new StreamReader("config.json"))
+                    if (System.IO.File.Exists("config.json"))
                     {
-                        if (sr != null)
+                        using (System.IO.StreamReader sr = new System.IO.StreamReader("config.json"))
                         {
-                            string json = sr.ReadToEnd();
-                            string json_data = JsonConvert.DeserializeObject<string>(json) ?? string.Empty;
-                            Data data = new();
-                            data.json_config = json_data;
-                            configure(data);
+                            if (sr != null)
+                            {
+                                string json = sr.ReadToEnd();
+                                Data data = new Data(DB, new List<TTasks.TTask>());
+                                data.json_config = json;
+                                configure(data);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Config file does not exist");
+                        Logger.Log("Config file does not exist, going to see if i can create it for them :)");
+                        Console.WriteLine("Creating config file");
+                        string json = "{\"is_setup\": false}";
+                        File.WriteAllText("config.json", json);
+                    
+                        using (System.IO.StreamWriter file = new System.IO.StreamWriter("config.json"))
+                        {
+                            file.WriteLine(json);
+                        }
+                        Console.WriteLine("Config file created");
+                        Logger.Log("Config file created, going to configure the application");
+                        using (System.IO.StreamReader sr = new System.IO.StreamReader("config.json"))
+                        {
+                            if (sr != null)
+                            {
+                                string jsond = sr.ReadToEnd();
+                                Data data = new Data(DB, new List<TTasks.TTask>());
+                                data.json_config = json;
+                                configure(data);
+                            }
                         }
                     }
                 }
@@ -88,8 +115,66 @@ namespace Tuvalu
         {
             string json = data.json_config;
             var jsonObject = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
-            bool? is_setup = jsonObject != null && jsonObject.ContainsKey("is_setup") ? jsonObject["is_setup"] as bool? : null;
+            bool is_setup = jsonObject != null && jsonObject.ContainsKey("is_setup");
+            if (is_setup)
+            {
+                Console.WriteLine("Configuration already done");
+                tui.Tui.Wmain(data);
+            }
+            else
+            {
+                Console.WriteLine("Configuration not done");
+                Console.WriteLine("Starting configuration");
+                Console.WriteLine("Enter the name of the user using this application");
+                string? user = Console.ReadLine();
+                Console.WriteLine("have any pronouns? (y/n)");
+                string? pronouns = Console.ReadLine();
+                if (pronouns == "y")
+                {
+                    Console.WriteLine("Enter pronouns");
+                    string? pronouns_input = Console.ReadLine();
+                }
+                Console.WriteLine("what is your preferred theme? (light/dark)");
+                string? theme = Console.ReadLine();
+                if (theme == "light")
+                {
+                    Console.WriteLine("Light theme selected");
+                }
+                else if (theme == "dark")
+                {
+                    Console.WriteLine("Dark theme selected");
+                }
+                else
+                {
+                    Console.WriteLine("Invalid theme selected, defaulting to dark theme");
+                }
 
+                // we now have a json object with the user's preferences
+                jsonObject["is_setup"] = true;
+                jsonObject["user"] = user;
+                jsonObject["pronouns"] = pronouns;
+                jsonObject["theme"] = theme;
+                // if we can't serialize the object, we'll just throw an exception, gracefully halt the program, and log the error
+                try 
+                {
+                    string new_json = JsonConvert.SerializeObject(jsonObject);
+                    File.WriteAllText("config.json", new_json);
+                    using (System.IO.StreamWriter file = new System.IO.StreamWriter("config.json"))
+                    {
+                        file.WriteLine(new_json);
+                    }
+                    Console.WriteLine("Configuration complete");
+                    tui.Tui.Wmain(data);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"An unexpected error occurred: {ex.Message}");
+                    Logger.Log(ex);
+                    return;
+                }
+
+                
+            }
         }
     }
 }

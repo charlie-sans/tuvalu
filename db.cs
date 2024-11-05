@@ -258,6 +258,77 @@ namespace Tuvalu.DB
             }
             return result;
         }
+        // execute non query 
+        public static void ExecuteNonQuery(DBconnector db)
+        {
+            if (db.DBType == "SQLite")
+            {
+            if (string.IsNullOrEmpty(db.DBConnectionString))
+            {
+                throw new Exception("Database connection string cannot be empty");
+            }
+            using (SQLiteConnection connection = new SQLiteConnection(db.DBConnectionString))
+            {
+                connection.Open();
+                using (SQLiteCommand command = new SQLiteCommand(connection))
+                {
+                command.CommandText = db.DBCommand;
+                command.ExecuteNonQuery();
+                }
+                connection.Close();
+            }
+            }
+            else
+            {
+            throw new Exception("Database type not supported");
+            }
+        }
+
+        // get tasks list
+        // public static  GetTasks(DBconnector db)
+        public static List<TTasks.TTask> GetTasks(DBconnector db)
+        {
+            List<TTasks.TTask> tasks = new List<TTasks.TTask>();
+            if (db.DBType == "SQLite")
+            {
+                if (string.IsNullOrEmpty(db.DBConnectionString))
+                {
+                    throw new Exception("Database connection string cannot be empty");
+                }
+                using (SQLiteConnection connection = new SQLiteConnection(db.DBConnectionString))
+                {
+                    connection.Open();
+                    using (SQLiteCommand command = new SQLiteCommand(connection))
+                    {
+                        command.CommandText = "SELECT * FROM Tasks";
+                        using (SQLiteDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                TTasks.TTask task = new TTasks.TTask();
+                                task.Name = reader["Name"]?.ToString() ?? string.Empty;
+                                task.Description = reader["Description"]?.ToString() ?? string.Empty;
+                                task.Status = reader["Status"]?.ToString() ?? string.Empty;
+                                task.Priority = reader["Priority"]?.ToString() ?? string.Empty;
+                                task.DueDate = reader["DueDate"]?.ToString() ?? string.Empty;
+                                task.CreatedDate = reader["CreatedDate"]?.ToString() ?? string.Empty;
+                                task.CompletedDate = reader["CompletedDate"]?.ToString() ?? string.Empty;
+                                task.ID = reader["ID"]?.ToString() ?? string.Empty;
+                                tasks.Add(task);
+                            }
+                        }
+                    }
+                    connection.Close();
+                }
+            }
+            else
+            {
+                throw new Exception("Database type not supported");
+            }
+            return tasks;
+        }
+       
+
         public static int CreateTable(DBconnector db)
         {
             int result = 0;

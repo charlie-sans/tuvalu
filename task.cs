@@ -20,7 +20,7 @@ using System.Data.SQLite;
 using System.Data.SqlClient;
 using System.Data.Sql;
 using Tuvalu.DB;
-namespace Tuvalu.Tasks{
+namespace Tuvalu{
     public class Task_helper_lines
     {
         public static string? greetings(int message_ID)
@@ -81,6 +81,37 @@ namespace Tuvalu.Tasks{
                 public string CreatedDate;
                 public string CompletedDate;
                 public string ID;
+
+                public static bool operator ==(TTask left, TTask right)
+            {
+                return left.Equals(right);
+            }
+
+            public static bool operator !=(TTask left, TTask right)
+            {
+                return !(left == right);
+            }
+
+            public override bool Equals(object? obj)
+            {
+                if (obj is TTask task)
+                {
+                    return Name == task.Name &&
+                           Description == task.Description &&
+                           Status == task.Status &&
+                           Priority == task.Priority &&
+                           DueDate == task.DueDate &&
+                           CreatedDate == task.CreatedDate &&
+                           CompletedDate == task.CompletedDate &&
+                           ID == task.ID;
+                }
+                return false;
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(Name, Description, Status, Priority, DueDate, CreatedDate, CompletedDate, ID);
+            }
 
                 public TTask(string name, string description, string status, string priority, string dueDate, string createdDate, string completedDate, string id)
                 {
