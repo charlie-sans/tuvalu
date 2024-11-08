@@ -5,10 +5,24 @@ using System.Data;
 using System.Data.Sql;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Tuvalu;
-
+using static Tuvalu.Program;
 namespace Tuvalu.DB
 {
+    public struct Data
+    {
+        public DBconnector DB;
+        public List<TTasks.TTask> Tasklist;
+        public string json_config;
+
+        public Data(DBconnector db, List<TTasks.TTask> tasklist)
+        {
+            DB = db;
+            Tasklist = tasklist;
+            json_config = null;
+        }
+    }
 
     public class DBconnector
     {
@@ -213,8 +227,6 @@ namespace Tuvalu.DB
             set { _dbQueryConditionColumn = value; }
         }
 
-
-
         public string DBQueryConditionOperator
         {
             get { return _dbQueryConditionOperator; }
@@ -233,15 +245,16 @@ namespace Tuvalu.DB
             {
                 if (string.IsNullOrEmpty(db.DBPath))
                 {
-                    throw new Exception("Database path cannot be empty");
+                    db.DBPath = Globals.AppDBFile;
                 }
                 SQLiteConnection.CreateFile(db.DBPath);
             }
             else
             {
-                throw new Exception("Database type not supported");
+                throw new NotSupportedException($"Database type {db.DBType} not supported");
             }
         }
+
         public static bool DBExists(DBconnector db)
         {
             bool result = false;
@@ -249,7 +262,7 @@ namespace Tuvalu.DB
             {
                 if (string.IsNullOrEmpty(db.DBPath))
                 {
-                    throw new Exception("Database path cannot be empty");
+                    db.DBPath = Globals.AppDBFile;
                 }
                 result = System.IO.File.Exists(db.DBPath);
             }
@@ -259,6 +272,7 @@ namespace Tuvalu.DB
             }
             return result;
         }
+
         public static int ExecuteNonQuery(DBconnector db)
         {
             int result = 0;
@@ -285,6 +299,21 @@ namespace Tuvalu.DB
             }
             return result;
         }
+
+        public static async Task<int> ExecuteNonQueryAsync(DBconnector db)
+        {
+            if (db.DBType != "SQLite")
+                throw new NotSupportedException($"Database type {db.DBType} not supported");
+
+            if (string.IsNullOrEmpty(db.DBConnectionString))
+                throw new Exception("Database connection string cannot be empty");
+
+            using var connection = new SQLiteConnection(db.DBConnectionString);
+            await connection.OpenAsync();
+            using var command = new SQLiteCommand(db.DBCommand, connection);
+            return await command.ExecuteNonQueryAsync();
+        }
+
         public static int ExecuteScalar(DBconnector db)
         {
             int result = 0;
@@ -311,7 +340,7 @@ namespace Tuvalu.DB
             }
             return result;
         }
-        
+
         public static DataTable GetDataTable(DBconnector db)
         {
             DataTable result = new DataTable();
@@ -366,6 +395,7 @@ namespace Tuvalu.DB
                 throw new Exception("Database type not supported");
             }
         }
+
         public static int GetNextID(DBconnector db)
         {
             if (db.DBType == "SQLite")
@@ -397,53 +427,67 @@ namespace Tuvalu.DB
             }
             return 0; // Default to 0 if no tasks exist
         }
-        // execute non query 
-        
 
-        // get tasks list
-        // public static  GetTasks(DBconnector db)
         public static List<TTasks.TTask> GetTasks(DBconnector db)
         {
-            List<TTasks.TTask> tasks = new List<TTasks.TTask>();
-            if (db.DBType == "SQLite")
+            if (db.DBType != "SQLite")
+                throw new NotSupportedException($"Database type {db.DBType} not supported");
+
+            var tasks = new List<TTasks.TTask>();
+
+            using var connection = new SQLiteConnection(db.DBConnectionString);
+            connection.Open();
+
+            using var command = new SQLiteCommand("SELECT * FROM Tasks", connection);
+            using var reader = command.ExecuteReader();
+
+            while (reader.Read())
             {
-                if (string.IsNullOrEmpty(db.DBConnectionString))
+                tasks.Add(new TTasks.TTask
                 {
-                    throw new Exception("Database connection string cannot be empty");
-                }
-                using (SQLiteConnection connection = new SQLiteConnection(db.DBConnectionString))
-                {
-                    connection.Open();
-                    using (SQLiteCommand command = new SQLiteCommand(connection))
-                    {
-                        command.CommandText = "SELECT * FROM Tasks";
-                        using (SQLiteDataReader reader = command.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                TTasks.TTask task = new TTasks.TTask();
-                                task.Name = reader["Name"]?.ToString() ?? string.Empty;
-                                task.Description = reader["Description"]?.ToString() ?? string.Empty;
-                                task.Status = reader["Status"]?.ToString() ?? string.Empty;
-                                task.Priority = reader["Priority"]?.ToString() ?? string.Empty;
-                                task.DueDate = reader["DueDate"]?.ToString() ?? string.Empty;
-                                task.CreatedDate = reader["CreatedDate"]?.ToString() ?? string.Empty;
-                                task.CompletedDate = reader["CompletedDate"]?.ToString() ?? string.Empty;
-                                task.ID = reader["ID"]?.ToString() ?? string.Empty;
-                                tasks.Add(task);
-                            }
-                        }
-                    }
-                    connection.Close();
-                }
+                    Name = reader["Name"]?.ToString() ?? string.Empty,
+                    Description = reader["Description"]?.ToString() ?? string.Empty,
+                    Status = reader["Status"]?.ToString() ?? string.Empty,
+                    Priority = reader["Priority"]?.ToString() ?? string.Empty,
+                    DueDate = reader["DueDate"]?.ToString() ?? string.Empty,
+                    CreatedDate = reader["CreatedDate"]?.ToString() ?? string.Empty,
+                    CompletedDate = reader["CompletedDate"]?.ToString() ?? string.Empty,
+                    ID = reader["ID"]?.ToString() ?? string.Empty
+                });
             }
-            else
-            {
-                throw new Exception("Database type not supported");
-            }
+
             return tasks;
         }
-       
+
+        public static async Task<List<TTasks.TTask>> GetTasksAsync(DBconnector db)
+        {
+            if (db.DBType != "SQLite")
+                throw new NotSupportedException($"Database type {db.DBType} not supported");
+
+            var tasks = new List<TTasks.TTask>();
+
+            using var connection = new SQLiteConnection(db.DBConnectionString);
+            await connection.OpenAsync();
+            using var command = new SQLiteCommand("SELECT * FROM Tasks", connection);
+            using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                tasks.Add(new TTasks.TTask
+                {
+                    Name = reader["Name"]?.ToString() ?? string.Empty,
+                    Description = reader["Description"]?.ToString() ?? string.Empty,
+                    Status = reader["Status"]?.ToString() ?? string.Empty,
+                    Priority = reader["Priority"]?.ToString() ?? string.Empty,
+                    DueDate = reader["DueDate"]?.ToString() ?? string.Empty,
+                    CreatedDate = reader["CreatedDate"]?.ToString() ?? string.Empty,
+                    CompletedDate = reader["CompletedDate"]?.ToString() ?? string.Empty,
+                    ID = reader["ID"]?.ToString() ?? string.Empty
+                });
+            }
+
+            return tasks;
+        }
 
         public static int CreateTable(DBconnector db)
         {
@@ -472,6 +516,19 @@ namespace Tuvalu.DB
             return result;
         }
 
-    }
+        public static async Task<bool> CreateTableAsync(DBconnector db)
+        {
+            if (db.DBType != "SQLite")
+                throw new NotSupportedException($"Database type {db.DBType} not supported");
 
+            if (string.IsNullOrEmpty(db.DBConnectionString))
+                throw new Exception("Database connection string cannot be empty");
+
+            using var connection = new SQLiteConnection(db.DBConnectionString);
+            await connection.OpenAsync();
+            using var command = new SQLiteCommand(db.DBCommand, connection);
+            await command.ExecuteNonQueryAsync();
+            return true;
+        }
+    }
 }

@@ -63,6 +63,10 @@
               "target": "Package",
               "version": "[1.17.1, )"
             },
+            "home": {
+              "target": "Package",
+              "version": "[1.1.0, )"
+            },
             "sqlite": {
               "target": "Package",
               "version": "[3.13.0, )"

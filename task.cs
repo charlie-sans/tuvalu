@@ -66,7 +66,7 @@ namespace Tuvalu{
     public class TTasks
         {
             DBconnector dBconnector = new DBconnector();
-            String con;
+           required public String con;
 
             // public TTasks()
             // {
@@ -85,36 +85,39 @@ namespace Tuvalu{
                 public string CompletedDate { get; set; }
                 public string ID { get; set; }
 
-                public static bool operator ==(TTask left, TTask right)
-            {
-                return left.Equals(right);
-            }
-
-            public static bool operator !=(TTask left, TTask right)
-            {
-                return !(left == right);
-            }
-
-            public override bool Equals(object? obj)
-            {
-                if (obj is TTask task)
+                public static bool operator ==(TTask? left, TTask? right)
                 {
-                    return Name == task.Name &&
-                           Description == task.Description &&
-                           Status == task.Status &&
-                           Priority == task.Priority &&
-                           DueDate == task.DueDate &&
-                           CreatedDate == task.CreatedDate &&
-                           CompletedDate == task.CompletedDate &&
-                           ID == task.ID;
+                    if (left is null) return right is null;
+                    return left.Equals(right);
                 }
-                return false;
-            }
 
-            public override int GetHashCode()
-            {
-                return HashCode.Combine(Name, Description, Status, Priority, DueDate, CreatedDate, CompletedDate, ID);
-            }
+                public static bool operator !=(TTask? left, TTask? right)
+                {
+                    return !(left == right);
+                }
+
+                public override bool Equals(object? obj)
+                {
+                    if (obj is null) return false;
+                    return obj is TTask task && Equals(task);
+                }
+
+                public bool Equals(TTask other)
+                {
+                    return Name == other.Name &&
+                           Description == other.Description &&
+                           Status == other.Status &&
+                           Priority == other.Priority &&
+                           DueDate == other.DueDate &&
+                           CreatedDate == other.CreatedDate &&
+                           CompletedDate == other.CompletedDate &&
+                           ID == other.ID;
+                }
+
+                public override int GetHashCode()
+                {
+                    return HashCode.Combine(Name, Description, Status, Priority, DueDate, CreatedDate, CompletedDate, ID);
+                }
 
                 public TTask(string name, string description, string status, string priority, string dueDate, string createdDate, string completedDate, string id)
                 {
@@ -128,8 +131,6 @@ namespace Tuvalu{
                     ID = id;
                 }
             }
-
-        
 
             public static TTask CreateTask(string name, string description, string status, string priority, string dueDate, string createdDate, string completedDate, string id)
             {
@@ -259,6 +260,101 @@ namespace Tuvalu{
                 return tasks;
             }
 
+            public static async Task<TTask> CreateTaskAsync(string name, string description, string status, string priority, string dueDate)
+            {
+                return new TTask
+                {
+                    Name = name,
+                    Description = description,
+                    Status = status,
+                    Priority = priority,
+                    DueDate = dueDate,
+                    CreatedDate = DateTime.Now.ToString("yyyy-MM-dd"),
+                    CompletedDate = string.Empty,
+                    ID = Guid.NewGuid().ToString()
+                };
+            }
 
+            public static async Task AddTaskAsync(TTask task, string connectionString)
+            {
+                using var connection = new SQLiteConnection(connectionString);
+                await connection.OpenAsync();
+                using var command = new SQLiteCommand(connection);
+                
+                command.CommandText = @"INSERT INTO Tasks 
+                    (Name, Description, Status, Priority, DueDate, CreatedDate, CompletedDate, ID) 
+                    VALUES (@Name, @Description, @Status, @Priority, @DueDate, @CreatedDate, @CompletedDate, @ID)";
+                    
+                command.Parameters.AddWithValue("@Name", task.Name);
+                command.Parameters.AddWithValue("@Description", task.Description);
+                command.Parameters.AddWithValue("@Status", task.Status);
+                command.Parameters.AddWithValue("@Priority", task.Priority);
+                command.Parameters.AddWithValue("@DueDate", task.DueDate);
+                command.Parameters.AddWithValue("@CreatedDate", task.CreatedDate);
+                command.Parameters.AddWithValue("@CompletedDate", task.CompletedDate);
+                command.Parameters.AddWithValue("@ID", task.ID);
+                
+                await command.ExecuteNonQueryAsync();
+            }
+
+            public static async Task UpdateTaskAsync(TTask task, string connectionString)
+            {
+                using var connection = new SQLiteConnection(connectionString);
+                await connection.OpenAsync();
+                using var command = new SQLiteCommand(connection);
+                
+                command.CommandText = @"UPDATE Tasks 
+                    SET Name = @Name, Description = @Description, Status = @Status, 
+                        Priority = @Priority, DueDate = @DueDate, CompletedDate = @CompletedDate 
+                    WHERE ID = @ID";
+                    
+                command.Parameters.AddWithValue("@Name", task.Name);
+                command.Parameters.AddWithValue("@Description", task.Description);
+                command.Parameters.AddWithValue("@Status", task.Status);
+                command.Parameters.AddWithValue("@Priority", task.Priority);
+                command.Parameters.AddWithValue("@DueDate", task.DueDate);
+                command.Parameters.AddWithValue("@CompletedDate", task.CompletedDate);
+                command.Parameters.AddWithValue("@ID", task.ID);
+                
+                await command.ExecuteNonQueryAsync();
+            }
+
+            private static readonly Dictionary<string, TTask> _taskCache = new();
+            
+            public static async Task<TTask?> GetTaskAsync(string id, string connectionString)
+            {
+                // Check cache first
+                if (_taskCache.TryGetValue(id, out var cachedTask))
+                    return cachedTask;
+
+                using var connection = new SQLiteConnection(connectionString);
+                await connection.OpenAsync();
+                using var command = new SQLiteCommand(connection);
+                
+                command.CommandText = "SELECT * FROM Tasks WHERE ID = @ID";
+                command.Parameters.AddWithValue("@ID", id);
+                
+                using var reader = await command.ExecuteReaderAsync();
+                if (await reader.ReadAsync())
+                {
+                    var task = new TTask
+                    {
+                        Name = reader["Name"]?.ToString() ?? string.Empty,
+                        Description = reader["Description"]?.ToString() ?? string.Empty,
+                        Status = reader["Status"]?.ToString() ?? string.Empty,
+                        Priority = reader["Priority"]?.ToString() ?? string.Empty,
+                        DueDate = reader["DueDate"]?.ToString() ?? string.Empty,
+                        CreatedDate = reader["CreatedDate"]?.ToString() ?? string.Empty,
+                        CompletedDate = reader["CompletedDate"]?.ToString() ?? string.Empty,
+                        ID = reader["ID"]?.ToString() ?? string.Empty
+                    };
+                    
+                    // Add to cache
+                    _taskCache[id] = task;
+                    return task;
+                }
+                
+                return null;
+            }
         }
 }

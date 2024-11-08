@@ -1,10 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "I2Xw+8IeqG4=",
+  "dgSpecHash": "vfQYNZpvMUc=",
   "success": true,
   "projectFilePath": "T:\\git\\tuvalu\\tuvalu.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\GAMER\\.nuget\\packages\\entityframework\\6.4.4\\entityframework.6.4.4.nupkg.sha512",
+    "C:\\Users\\GAMER\\.nuget\\packages\\home\\1.1.0\\home.1.1.0.nupkg.sha512",
     "C:\\Users\\GAMER\\.nuget\\packages\\microsoft.csharp\\4.7.0\\microsoft.csharp.4.7.0.nupkg.sha512",
     "C:\\Users\\GAMER\\.nuget\\packages\\microsoft.netcore.platforms\\3.1.0\\microsoft.netcore.platforms.3.1.0.nupkg.sha512",
     "C:\\Users\\GAMER\\.nuget\\packages\\microsoft.win32.registry\\4.7.0\\microsoft.win32.registry.4.7.0.nupkg.sha512",
@@ -34,5 +35,16 @@
     "C:\\Users\\GAMER\\.nuget\\packages\\system.windows.extensions\\4.7.0\\system.windows.extensions.4.7.0.nupkg.sha512",
     "C:\\Users\\GAMER\\.nuget\\packages\\terminal.gui\\1.17.1\\terminal.gui.1.17.1.nupkg.sha512"
   ],
-  "logs": []
+  "logs": [
+    {
+      "code": "NU1701",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'home 1.1.0' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1' instead of the project target framework 'net8.0'. This package may not be fully compatible with your project.",
+      "libraryId": "home",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    }
+  ]
 }

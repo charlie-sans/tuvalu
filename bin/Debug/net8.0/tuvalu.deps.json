@@ -11,6 +11,7 @@
           "Newtonsoft.Json": "13.0.3",
           "System.Data.SQLite": "1.0.119",
           "Terminal.Gui": "1.17.1",
+          "home": "1.1.0",
           "SQLite": "3.13.0"
         },
         "runtime": {
@@ -33,6 +34,14 @@
           "lib/netstandard2.1/EntityFramework.dll": {
             "assemblyVersion": "6.0.0.0",
             "fileVersion": "6.400.420.21404"
+          }
+        }
+      },
+      "home/1.1.0": {
+        "runtime": {
+          "lib/net48/home.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
           }
         }
       },
@@ -377,6 +386,13 @@
       "sha512": "sha512-yj1+/4tci7Panu3jKDHYizxwVm0Jvm7b7m057b5h4u8NUHGCR8WIWirBTw+8EptRffwftIWPBeIRGNKD1ewEMQ==",
       "path": "entityframework/6.4.4",
       "hashPath": "entityframework.6.4.4.nupkg.sha512"
+    },
+    "home/1.1.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-2cOJa/7G84Ikz+kDyhc9wHyLUTbucIZeUeopevp89lulKUQM90T4sX0bnISuPK8t8xgTjLPo69hKw30vMoGeuQ==",
+      "path": "home/1.1.0",
+      "hashPath": "home.1.1.0.nupkg.sha512"
     },
     "Microsoft.CSharp/4.7.0": {
       "type": "package",
